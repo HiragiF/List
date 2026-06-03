@@ -3,11 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Swipe Todo PWA</title>
+    <title>Simple ToDo</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
+    
+    <!-- 👇 iOSでPWAとして動作させるための設定 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- 👇 【追加】iOSにアプリ名とあの美しいロゴを認識させるための記述 -->
+    <meta name="apple-mobile-web-app-title" content="SimpleTodo">
+    <link rel="apple-touch-icon" href="ToDo_Logo_192px.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="ToDo_Logo_512px.png">
 </head>
 <body>
 
