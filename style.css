@@ -1,0 +1,259 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f5f7fa;
+    color: #333;
+    overflow-x: hidden;
+    overscroll-behavior-y: contain;
+}
+
+.app-container {
+    max-width: 500px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+header {
+    padding: 15px;
+    background: #4a6fa5;
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    text-align: center;
+}
+
+h1 {
+    font-size: 1.5rem;
+}
+
+.todo-list {
+    list-style: none;
+    padding: 10px;
+    position: relative;
+}
+
+/* --- スワイプ対応のための2層構造スタイル --- */
+
+/* 土台（裏側のアクション背景） */
+.todo-item-wrapper {
+    position: relative;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    overflow: hidden; /* はみ出た背景色をカット */
+    background: #eee;
+}
+
+/* スワイプした時に裏から見える背景 */
+.swipe-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 25px;
+    box-sizing: border-box;
+    z-index: 1;
+    /* 右側へ向かって縮むように、変形の基点を右端に設定 */
+    transform-origin: right center;
+    transition: background-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* 【完了エフェクト用】裏の背景が右へスーッと滑らかにハケる用の設定 */
+.swipe-background.sliding-out {
+    transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* 実際に右へ消えていく状態 */
+.swipe-background.slide-to-right {
+    transform: translateX(100%);
+}
+
+/* 引っ張る方向で背景色を変えるクラス */
+.swipe-background.action-complete { background-color: #2ecc71; } /* 右引き：緑 */
+.swipe-background.action-delete { background-color: #ff4d4d; }     /* 左引き：赤 */
+
+/* 裏側のアイコン */
+.swipe-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 0.2s, transform 0.2s;
+}
+.swipe-icon.active {
+    opacity: 1;
+    transform: scale(1.1);
+}
+.swipe-icon svg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: white;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* 表側のカード本体（コンテンツ） */
+.todo-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    border-left: 5px solid #ccc;
+    position: relative;
+    z-index: 2; /* 裏側より前に出す */
+    user-select: none;
+    touch-action: none;
+}
+
+/* スワイプから手を離した時の滑らかなバウンスアニメーション用 */
+.todo-item.swiping-fallback {
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+}
+
+/* 優先度別の左ボーダー色 */
+.todo-item-wrapper[data-priority="1"] .todo-item { border-left-color: #ff4d4d; }
+.todo-item-wrapper[data-priority="2"] .todo-item { border-left-color: #ff944d; }
+.todo-item-wrapper[data-priority="3"] .todo-item { border-left-color: #ffda4d; }
+.todo-item-wrapper[data-priority="4"] .todo-item { border-left-color: #4d94ff; }
+.todo-item-wrapper[data-priority="5"] .todo-item { border-left-color: #b3b3b3; }
+
+/* 並べ替えドラッグ中のスタイル */
+.todo-item-wrapper.dragging {
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    max-width: 480px;
+    opacity: 0.9;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    z-index: 9999;
+    transform: scale(1.02);
+}
+
+.drag-handle {
+    padding: 0 10px;
+    color: #aaa;
+    font-size: 20px;
+    cursor: grab;
+}
+
+.todo-content {
+    flex: 1;
+    min-width: 0;
+    margin-right: 10px;
+}
+
+.todo-text {
+    font-size: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.todo-actions {
+    display: flex;
+    align-items: center;
+}
+
+/* 編集ボタンのスタイル（削除ボタンは裏へ行ったので編集のみ） */
+.edit-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.edit-btn svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: #5c768d;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 0.1s ease, stroke 0.2s;
+}
+.edit-btn:active svg {
+    transform: scale(0.85);
+    stroke: #3b4e60;
+}
+
+/* モーダルやボタンなどその他 */
+.fab-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #4a6fa5;
+    color: white;
+    font-size: 32px;
+    border: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: transform 0.1s ease, background-color 0.2s;
+}
+.fab-btn:active { transform: scale(0.9); background-color: #3b5984; }
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+.modal-overlay.active { opacity: 1; pointer-events: auto; }
+
+.modal-window {
+    background: white;
+    width: 85%;
+    max-width: 400px;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+    transform: translateY(20px);
+    transition: transform 0.25s ease;
+}
+.modal-overlay.active .modal-window { transform: translateY(0); }
+.modal-window h2 { font-size: 1.2rem; margin-bottom: 20px; color: #333; }
+.form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
+.form-group label { font-size: 14px; color: #666; font-weight: bold; }
+.form-group input, .form-group select { padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; background: #f9f9f9; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; }
+.modal-actions button { padding: 12px 20px; border: none; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; }
+.cancel-btn { background: #eee; color: #666; }
+.submit-btn { background: #4a6fa5; color: white; }

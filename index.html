@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Swipe Todo PWA</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+
+    <div class="app-container">
+        <header>
+            <h1>TODO</h1>
+        </header>
+
+        <main>
+            <ul id="todo-list" class="todo-list"></ul>
+        </main>
+
+        <button id="fab-btn" class="fab-btn">+</button>
+
+        <div id="modal-overlay" class="modal-overlay">
+            <div class="modal-window">
+                <h2 id="modal-title">新しいタスクを追加</h2>
+                <form id="todo-form">
+                    <div class="form-group">
+                        <label for="todo-input">タスク内容</label>
+                        <input type="text" id="todo-input" placeholder="何をする？" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="priority-input">優先度</label>
+                        <select id="priority-input">
+                            <option value="1">優先度 1 (高)</option>
+                            <option value="2">優先度 2</option>
+                            <option value="3" selected>優先度 3</option>
+                            <option value="4">優先度 4</option>
+                            <option value="5">優先度 5 (低)</option>
+                        </select>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" id="modal-cancel-btn" class="cancel-btn">キャンセル</button>
+                        <button type="submit" id="modal-submit-btn" class="submit-btn">追加</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="delete-modal-overlay" class="modal-overlay">
+            <div class="modal-window">
+                <h2>タスクの削除</h2>
+                <p style="margin-bottom: 20px; color: #666; font-size: 14px;">このタスクを本当に削除しますか？<br>（この操作は取り消せません）</p>
+                <div class="modal-actions">
+                    <button type="button" id="delete-cancel-btn" class="cancel-btn">キャンセル</button>
+                    <button type="button" id="delete-confirm-btn" class="submit-btn" style="background: #ff4d4d;">削除する</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+                .then(() => console.log('Service Worker Registered'))
+                .catch(err => console.error('Service Worker Failed', err));
+        }
+    </script>
+</body>
+</html>

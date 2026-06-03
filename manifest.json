@@ -1,0 +1,21 @@
+{
+  "short_name": "ToDo",
+  "name": "Simple ToDo",
+  "icons": [
+    {
+      "src": "ToDo_Logo_192px.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "ToDo_Logo_512px.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "index.html",
+  "background_color": "#f5f7fa",
+  "theme_color": "#4a6fa5",
+  "display": "standalone",
+  "orientation": "portrait"
+}
