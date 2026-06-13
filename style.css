@@ -13,6 +13,11 @@ body {
     overscroll-behavior-y: contain;
 }
 
+/* フォームやカード選択時のブラウザ標準のオレンジ/青枠線を完全に抹殺 */
+input:focus, select:focus, button:focus, .todo-item:focus {
+    outline: none !important;
+}
+
 .app-container {
     max-width: 500px;
     margin: 0 auto;
@@ -43,14 +48,12 @@ h1 {
     position: relative;
 }
 
-/* --- スワイプ対応のための2層構造スタイル --- */
-
 /* 土台（裏側のアクション背景） */
 .todo-item-wrapper {
     position: relative;
     margin-bottom: 10px;
     border-radius: 8px;
-    overflow: hidden; /* はみ出た背景色をカット */
+    overflow: hidden;
     background: #eee;
 }
 
@@ -67,24 +70,20 @@ h1 {
     padding: 0 25px;
     box-sizing: border-box;
     z-index: 1;
-    /* 右側へ向かって縮むように、変形の基点を右端に設定 */
     transform-origin: right center;
     transition: background-color 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
 }
 
-/* 【完了エフェクト用】裏の背景が右へスーッと滑らかにハケる用の設定 */
 .swipe-background.sliding-out {
     transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* 実際に右へ消えていく状態 */
 .swipe-background.slide-to-right {
     transform: translateX(100%);
 }
 
-/* 引っ張る方向で背景色を変えるクラス */
-.swipe-background.action-complete { background-color: #2ecc71; } /* 右引き：緑 */
-.swipe-background.action-delete { background-color: #ff4d4d; }     /* 左引き：赤 */
+.swipe-background.action-complete { background-color: #2ecc71; }
+.swipe-background.action-delete { background-color: #ff4d4d; }
 
 /* 裏側のアイコン */
 .swipe-icon {
@@ -109,7 +108,7 @@ h1 {
     stroke-linejoin: round;
 }
 
-/* 表側のカード本体（コンテンツ） */
+/* 表側のカード本体 */
 .todo-item {
     display: flex;
     align-items: center;
@@ -118,22 +117,26 @@ h1 {
     padding: 15px;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    border-left: 5px solid #ccc;
     position: relative;
-    z-index: 2; /* 裏側より前に出す */
+    z-index: 2;
     user-select: none;
     touch-action: none;
 }
 
-/* スワイプから手を離した時の滑らかなバウンスアニメーション用 */
 .todo-item.swiping-fallback {
     transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.15);
 }
 
-/* 優先度別の左ボーダー色 */
-.todo-item-wrapper[data-priority="1"] .todo-item { border-left-color: #A7C796; }
-.todo-item-wrapper[data-priority="2"] .todo-item { border-left-color: #4E7C59; }
-.todo-item-wrapper[data-priority="3"] .todo-item { border-left-color: #5C4033; }
+/* 🎨 【確定版】最優先：木を構成する3色の左ボーダー指定 */
+.todo-item-wrapper[data-priority="1"] .todo-item { 
+    border-left: 5px solid #A7C796 !important; /* 上：黄緑（若葉） */
+}
+.todo-item-wrapper[data-priority="2"] .todo-item { 
+    border-left: 5px solid #4E7C59 !important; /* 中：くすみ緑（普通の葉） */
+}
+.todo-item-wrapper[data-priority="3"] .todo-item { 
+    border-left: 5px solid #5C4033 !important; /* 下：茶色（幹） */
+}
 
 /* 並べ替えドラッグ中のスタイル */
 .todo-item-wrapper.dragging {
@@ -172,7 +175,6 @@ h1 {
     align-items: center;
 }
 
-/* 編集ボタンのスタイル（削除ボタンは裏へ行ったので編集のみ） */
 .edit-btn {
     background: none;
     border: none;
@@ -197,28 +199,69 @@ h1 {
     stroke: #3b4e60;
 }
 
-/* モーダルやボタンなどその他 */
-.fab-btn {
+/* 🛠 ハンバーガーメニューと飛び出すパーツのスタイル */
+.fab-container {
     position: fixed;
     bottom: 30px;
     right: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    z-index: 1000;
+}
+
+.fab-btn {
     width: 60px;
     height: 60px;
     border-radius: 50%;
     background: #4a6fa5;
     color: white;
-    font-size: 32px;
+    font-size: 28px;
     border: none;
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
     transition: transform 0.1s ease, background-color 0.2s;
 }
-.fab-btn:active { transform: scale(0.9); background-color: #3b5984; }
+.fab-btn:active { transform: scale(0.9); }
 
+.fab-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(20px);
+    transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* メニューが開いた状態 */
+.fab-menu.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.menu-item-btn {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: white;
+    border: none;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s;
+}
+.menu-item-btn:active { transform: scale(0.85); }
+
+/* モーダル関連 */
 .modal-overlay {
     position: fixed;
     top: 0;

@@ -13,10 +13,12 @@ const todoForm = document.getElementById('todo-form');
 const todoInput = document.getElementById('todo-input');
 const priorityInput = document.getElementById('priority-input');
 
+// 🛠 アップデートしたメニュー用のDOM取得
 const fabTrigger = document.getElementById('fab-trigger');
 const fabMenu = document.getElementById('fab-menu');
 const menuAddBtn = document.getElementById('menu-add-btn');
 const menuSortBtn = document.getElementById('menu-sort-btn');
+
 const modalOverlay = document.getElementById('modal-overlay');
 const modalCancelBtn = document.getElementById('modal-cancel-btn');
 const modalTitle = document.getElementById('modal-title');
@@ -27,14 +29,7 @@ const deleteModalOverlay = document.getElementById('delete-modal-overlay');
 const deleteCancelBtn = document.getElementById('delete-cancel-btn');
 const deleteConfirmBtn = document.getElementById('delete-confirm-btn');
 
-// --- 追加・編集モーダルイベント ---
-fabBtn.addEventListener('click', () => {
-    editingTodoId = null;
-    modalTitle.textContent = '新しいタスクを追加';
-    modalSubmitBtn.textContent = '追加';
-    modalOverlay.classList.add('active');
-    todoInput.focus();
-});
+// --- モーダルクローズ処理 ---
 modalCancelBtn.addEventListener('click', closeModal);
 modalOverlay.addEventListener('click', (e) => {
     if (e.target === modalOverlay) closeModal();
@@ -53,7 +48,6 @@ deleteModalOverlay.addEventListener('click', (e) => {
 function closeDeleteModal() {
     deleteModalOverlay.classList.remove('active');
     deletingTodoId = null;
-    // 削除ウィンドウを閉じたら、すべてのスワイプ固定を安全に戻す
     renderTodos();
 }
 
@@ -121,28 +115,28 @@ todoForm.addEventListener('submit', (e) => {
         if (todo) { todo.text = text; todo.priority = priority; }
     } else {
         const newTodo = { id: Date.now().toString(), text: text, priority: priority };
-        todos.unshift(newTodo); // 自動ソートしないので、新規は一番上にunshiftで追加
+        todos.unshift(newTodo); // 新規タスクは一番上に追加
     }
     saveAndRender();
     closeModal();
-    fabMenu.classList.remove('active'); // モーダルが閉じる時にメニューも閉じる
+    fabMenu.classList.remove('active');
+    fabTrigger.textContent = '☰';
 });
 
-// --- ハンバーガーメニューの開閉 ---
+// --- 🛠 ハンバーガーメニューの開閉制御 ---
 fabTrigger.addEventListener('click', (e) => {
     e.stopPropagation();
     fabMenu.classList.toggle('active');
-    // 開いているときはトリガーの文字を「×」にするなど、お好みで
     fabTrigger.textContent = fabMenu.classList.contains('active') ? '✕' : '☰';
 });
 
-// 画面のどこかをタップしたらメニューを閉じる
+// 画面をタップしたらメニューを閉じる
 document.addEventListener('click', () => {
     fabMenu.classList.remove('active');
     fabTrigger.textContent = '☰';
 });
 
-// --- メニュー内の「タスク追加」ボタン ---
+// --- 🛠 メニュー内の「タスク追加」ボタン ---
 menuAddBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     editingTodoId = null;
@@ -151,21 +145,19 @@ menuAddBtn.addEventListener('click', (e) => {
     modalOverlay.classList.add('active');
     todoInput.focus();
     
-    // メニューを閉じる
     fabMenu.classList.remove('active');
     fabTrigger.textContent = '☰';
 });
 
-// --- メニュー内の「優先度ソート」ボタン ---
+// --- 🛠 メニュー内の「優先度ソート」ボタン（手動ソート） ---
 menuSortBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     
-    // ボタンが押された時だけ、手動でソートを実行
+    // 押された瞬間だけ木構造（1 -> 2 -> 3）にガチッと並び替え
     todos.sort((a, b) => a.priority - b.priority);
     
     saveAndRender();
     
-    // メニューを閉じる
     fabMenu.classList.remove('active');
     fabTrigger.textContent = '☰';
 });
@@ -192,11 +184,12 @@ function saveAndRender() {
     renderTodos();
 }
 
+// エスケープ関数
 function escapeHTML(str) {
     return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
 }
 
-// --- 左右水平スワイプアクション（アニメーション競合バグ修正版） ---
+// 左右スワイプアクション
 function setupSwipeActions(wrapper) {
     const item = wrapper.querySelector('.todo-item');
     const bg = wrapper.querySelector('.swipe-background');
@@ -207,7 +200,7 @@ function setupSwipeActions(wrapper) {
     let startX = 0;
     let currentX = 0;
     let baseOffsetX = 0; 
-    let isAnimating = false; // 二重発動を防ぐセーフティフラグ
+    let isAnimating = false;
     const menuWidth = 75; 
     const threshold = 120; 
 
@@ -221,8 +214,6 @@ function setupSwipeActions(wrapper) {
     item.addEventListener('touchstart', (e) => {
         if (e.target.classList.contains('drag-handle') || isAnimating) return;
         startX = e.touches[0].clientX;
-        
-        // タッチ開始時に過去の不要なスタイルやクラスを完全クリア
         item.classList.remove('swiping-fallback');
         item.style.transition = 'none';
     }, { passive: true });
@@ -233,16 +224,12 @@ function setupSwipeActions(wrapper) {
         currentX = (e.touches[0].clientX - startX) + baseOffsetX;
         
         if (currentX > 0) {
-            // 右スワイプ（完了）
             bg.className = 'swipe-background action-complete';
             iconComplete.classList.add('active');
             iconDelete.classList.remove('active');
-            
-            // 指への追従（対数による適度な引っ張り抵抗）
             const translate = Math.pow(currentX, 0.85);
             item.style.transform = `translateX(${translate}px)`;
         } else if (currentX < 0) {
-            // 左スワイプ（削除メニュー展開）
             bg.className = 'swipe-background action-delete';
             iconDelete.classList.add('active');
             iconComplete.classList.remove('active');
@@ -258,54 +245,41 @@ function setupSwipeActions(wrapper) {
 
     item.addEventListener('touchend', () => {
         if (startX === 0 || isAnimating) return;
-
         const id = wrapper.getAttribute('data-id');
 
         if (currentX > threshold) {
-            // 【確定】右スワイプ完了：タスクは即座に消え、裏の背景が少し遅れて追うエフェクト
             isAnimating = true;
-
-            // 1. 表のタスクブロックは、手を離した勢いのままノンストップで滑らかに画面外へ消し去る
             item.style.transition = 'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1)';
             item.style.transform = `translateX(${window.innerWidth + 50}px)`;
 
-            // 2. タスクブロックが完全に消えて、緑のブロックが露出した状態の「とどまり（余韻）」時間を確保
-            // 250msほどその場で緑のチェックマークを見せる
             setTimeout(() => {
-                
-                // 3. 裏の緑ブロックにアニメーション用設定を与え、速い速度で右へスーッとずらす
                 bg.classList.add('sliding-out');
                 bg.classList.add('slide-to-right');
 
-                // 4. 緑のブロックも完全に画面外へハケきったら（200ms後）、データを消して再描画
                 setTimeout(() => {
                     todos = todos.filter(t => t.id !== id);
                     saveAndRender();
                     isAnimating = false;
                 }, 200);
-
-            }, 250); // ← ここが緑のブロックが「少しだけとどまる」時間です。好みで微調整してください
+            }, 250);
 
         } else if (currentX < -50) {
-            // 左スワイプ：一定距離以上ならメニュー位置（-75px）でホールド固定
             item.style.transition = 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
             item.style.transform = `translateX(${-menuWidth}px)`;
             baseOffsetX = -menuWidth;
         } else {
-            // どちらの条件にも満たない場合は原点にバウンスして戻る
             item.style.transition = 'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
             item.style.transform = 'translateX(0)';
             iconComplete.classList.remove('active');
             iconDelete.classList.remove('active');
             baseOffsetX = 0;
         }
-
         startX = 0;
         currentX = 0;
     });
 }
 
-// --- 上下並べ替えロジック（そのまま維持） ---
+// 上下並べ替えロジック
 function setupVerticalReorder(wrapper) {
     let touchOffsetY = 0;
     let draggingElement = null;
