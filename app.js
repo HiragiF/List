@@ -26,6 +26,18 @@ const modalSubmitBtn = document.getElementById('modal-submit-btn');
 
 // 削除モーダルの要素取得
 const deleteModalOverlay = document.getElementById('delete-modal-overlay');
+document.addEventListener('DOMContentLoaded', () => {
+    const fabBtn = document.getElementById('fab-trigger'); // または古いIDなら 'fab-btn'
+    if (fabBtn) {
+        fabBtn.addEventListener('click', () => {
+            editingTodoId = null;
+            modalTitle.textContent = '新しいタスクを追加';
+            modalSubmitBtn.textContent = '追加';
+            modalOverlay.classList.add('active');
+            todoInput.focus();
+        });
+    }
+});
 const deleteCancelBtn = document.getElementById('delete-cancel-btn');
 const deleteConfirmBtn = document.getElementById('delete-confirm-btn');
 
