@@ -13,7 +13,10 @@ const todoForm = document.getElementById('todo-form');
 const todoInput = document.getElementById('todo-input');
 const priorityInput = document.getElementById('priority-input');
 
-const fabBtn = document.getElementById('fab-btn');
+const fabTrigger = document.getElementById('fab-trigger');
+const fabMenu = document.getElementById('fab-menu');
+const menuAddBtn = document.getElementById('menu-add-btn');
+const menuSortBtn = document.getElementById('menu-sort-btn');
 const modalOverlay = document.getElementById('modal-overlay');
 const modalCancelBtn = document.getElementById('modal-cancel-btn');
 const modalTitle = document.getElementById('modal-title');
@@ -118,10 +121,53 @@ todoForm.addEventListener('submit', (e) => {
         if (todo) { todo.text = text; todo.priority = priority; }
     } else {
         const newTodo = { id: Date.now().toString(), text: text, priority: priority };
-        todos.unshift(newTodo);
+        todos.unshift(newTodo); // 自動ソートしないので、新規は一番上にunshiftで追加
     }
     saveAndRender();
     closeModal();
+    fabMenu.classList.remove('active'); // モーダルが閉じる時にメニューも閉じる
+});
+
+// --- ハンバーガーメニューの開閉 ---
+fabTrigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    fabMenu.classList.toggle('active');
+    // 開いているときはトリガーの文字を「×」にするなど、お好みで
+    fabTrigger.textContent = fabMenu.classList.contains('active') ? '✕' : '☰';
+});
+
+// 画面のどこかをタップしたらメニューを閉じる
+document.addEventListener('click', () => {
+    fabMenu.classList.remove('active');
+    fabTrigger.textContent = '☰';
+});
+
+// --- メニュー内の「タスク追加」ボタン ---
+menuAddBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    editingTodoId = null;
+    modalTitle.textContent = '新しいタスクを追加';
+    modalSubmitBtn.textContent = '追加';
+    modalOverlay.classList.add('active');
+    todoInput.focus();
+    
+    // メニューを閉じる
+    fabMenu.classList.remove('active');
+    fabTrigger.textContent = '☰';
+});
+
+// --- メニュー内の「優先度ソート」ボタン ---
+menuSortBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    
+    // ボタンが押された時だけ、手動でソートを実行
+    todos.sort((a, b) => a.priority - b.priority);
+    
+    saveAndRender();
+    
+    // メニューを閉じる
+    fabMenu.classList.remove('active');
+    fabTrigger.textContent = '☰';
 });
 
 // 編集ボタンイベント

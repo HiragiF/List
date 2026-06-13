@@ -131,11 +131,9 @@ h1 {
 }
 
 /* 優先度別の左ボーダー色 */
-.todo-item-wrapper[data-priority="1"] .todo-item { border-left-color: #ff4d4d; }
-.todo-item-wrapper[data-priority="2"] .todo-item { border-left-color: #ff944d; }
-.todo-item-wrapper[data-priority="3"] .todo-item { border-left-color: #ffda4d; }
-.todo-item-wrapper[data-priority="4"] .todo-item { border-left-color: #4d94ff; }
-.todo-item-wrapper[data-priority="5"] .todo-item { border-left-color: #b3b3b3; }
+.todo-item-wrapper[data-priority="1"] .todo-item { border-left-color: #A7C796; }
+.todo-item-wrapper[data-priority="2"] .todo-item { border-left-color: #4E7C59; }
+.todo-item-wrapper[data-priority="3"] .todo-item { border-left-color: #5C4033; }
 
 /* 並べ替えドラッグ中のスタイル */
 .todo-item-wrapper.dragging {
